@@ -150,6 +150,11 @@ export async function addMessageToChatRoom(roomCode, message, senderLanguage) {
             timestamp: new Date().toISOString()
         };
 
+        const rooms = getRoomsByLanguage(roomCode);
+
+        //iterate through the rooms array and append the translated message to the appropriate language array
+
+
         console.log("Formatted message object:", JSON.stringify(messageObject, null, 2));
 
         // Add message to the appropriate language array
@@ -178,6 +183,47 @@ export async function addMessageToChatRoom(roomCode, message, senderLanguage) {
             success: false,
             error: e.message
         };
+    }
+}
+
+export async function getRoomsByLanguage(roomCode) {
+    try {
+        console.log("Fetching languages for room:", roomCode);
+        const chatRoomRef = doc(db, "ChatRooms", roomCode.toString());
+        const chatRoomDoc = await getDoc(chatRoomRef);
+
+        if (chatRoomDoc.exists()) {
+            const chatRoomData = chatRoomDoc.data();
+            console.log("Languages found:", chatRoomData.languages);
+            return {
+                success: true,
+                languages: chatRoomData.languages || []
+            };
+        } else {
+            console.log("Chat room not found");
+            return {
+                success: false,
+                error: "Chat room not found"
+            };
+        }
+    } catch (e) {
+        console.error("Error fetching languages: ", e);
+        console.error("Error code:", e.code);
+        console.error("Error message:", e.message);
+        return {
+            success: false,
+            error: e.message
+        };
+    }
+}
+
+export async function translateMessage(message, senderLanguage, sender, timestamp) {
+    //Call the translate API
+    //Return the translated message
+    return  MessageObject = {
+        text: "translated message",
+        sender: sender,
+        timestamp: timestamp
     }
 }
 
