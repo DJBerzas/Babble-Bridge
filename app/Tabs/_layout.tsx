@@ -102,7 +102,7 @@ const _layout = () => {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="create_room"
         options={{
           headerShown: false,
           tabBarIcon: () => (
