@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, View } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 
 const _layout = () => {
@@ -9,13 +9,15 @@ const _layout = () => {
         tabBarShowLabel: false,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 16,
-          left: 16,
-          right: 16,
-          height: 80,
-          backgroundColor: 'transparent',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 140,
+          backgroundColor: '#fff', 
           borderTopWidth: 0,
           elevation: 10,
+          paddingTop: 20,
+          paddingBottom: 10,
         },
       }}
     >
@@ -24,51 +26,24 @@ const _layout = () => {
         options={{
           headerShown: false,
           tabBarIcon: () => (
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderRadius: 20,
-                backgroundColor: '#6685B5',
-              }}
-            >
+            <View style={styles.tabIcon}>
               <Image
                 source={require('./icons/home.png')}
-                style={{
-                  width: 26,
-                  height: 26,
-                  tintColor: '#fff',
-                }}
+                style={styles.iconImage}
               />
             </View>
           ),
         }}
       />
-
       <Tabs.Screen
         name="QR_Scan"
         options={{
           headerShown: false,
           tabBarIcon: () => (
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderRadius: 20,
-                backgroundColor: '#6685B5',
-              }}
-            >
+            <View style={styles.tabIcon}>
               <Image
                 source={require('./icons/goodCamera.png')}
-                style={{
-                  width: 26,
-                  height: 26,
-                  tintColor: '#fff',
-                }}
+                style={styles.iconImage}
               />
             </View>
           ),
@@ -79,23 +54,10 @@ const _layout = () => {
         options={{
           headerShown: false,
           tabBarIcon: () => (
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderRadius: 20,
-                backgroundColor: '#6685B5',
-              }}
-            >
+            <View style={styles.tabIcon}>
               <Image
                 source={require('./icons/Pound.png')}
-                style={{
-                  width: 28,
-                  height: 28,
-                  tintColor: '#fff',
-                }}
+                style={styles.iconImage}
               />
             </View>
           ),
@@ -106,32 +68,35 @@ const _layout = () => {
         options={{
           headerShown: false,
           tabBarIcon: () => (
-            <View
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderRadius: 20,
-                backgroundColor: '#6685B5',
-              }}
-            >
+            <View style={styles.tabIcon}>
               <Image
                 source={require('./icons/plus.png')}
-                style={{
-                  width: 28,
-                  height: 28,
-                  tintColor: '#fff',
-                }}
+                style={styles.iconImage}
               />
             </View>
           ),
         }}
       />
-
-      
     </Tabs>
   );
 };
+
+const styles = StyleSheet.create({
+  tabIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 30, 
+    paddingVertical: 20,   
+    borderRadius: 24,      
+    backgroundColor: '#6685B5',
+    marginTop : 20,
+  },
+  iconImage: {
+    width: 20,
+    height: 20,
+    tintColor: '#fff',
+  },
+});
+
 
 export default _layout;

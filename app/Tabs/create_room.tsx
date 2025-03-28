@@ -1,8 +1,22 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { createChatRoom, getCurrentUser, getUserData, Participant, detectLanguage } from '../../scripts/firebaseDbAPI';
+import {
+  createChatRoom,
+  getCurrentUser,
+  getUserData,
+  Participant,
+  detectLanguage,
+} from '../../scripts/firebaseDbAPI';
 import { Ionicons } from '@expo/vector-icons';
 
 const create_room = () => {
@@ -11,19 +25,20 @@ const create_room = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Add current user as first participant when component mounts
   useEffect(() => {
     const addCurrentUser = async () => {
       const currentUser = getCurrentUser();
       if (currentUser) {
         const userData = await getUserData(currentUser.uid);
         if (userData.success && userData.userData) {
-          setParticipants([{
-            id: currentUser.uid,
-            email: currentUser.email || '',
-            username: userData.userData.username,
-            nativeLanguage: userData.userData.nativeLanguage
-          }]);
+          setParticipants([
+            {
+              id: currentUser.uid,
+              email: currentUser.email || '',
+              username: userData.userData.username,
+              nativeLanguage: userData.userData.nativeLanguage,
+            },
+          ]);
         }
       }
     };
@@ -36,26 +51,25 @@ const create_room = () => {
       return;
     }
 
-    // Check if email is already added
-    if (participants.some(p => p.email === email)) {
+    if (participants.some((p) => p.email === email)) {
       Alert.alert('Error', 'This participant has already been added');
       return;
     }
 
     setLoading(true);
     try {
-      // Detect language from email (using a sample text)
       const detectedLanguage = await detectLanguage(email);
-      
-      // Add new participant
-      setParticipants([...participants, {
-        id: email, // Using email as ID for now
-        email: email,
-        username: email.split('@')[0], // Simple username from email
-        nativeLanguage: detectedLanguage
-      }]);
 
-      // Clear input
+      setParticipants([
+        ...participants,
+        {
+          id: email,
+          email: email,
+          username: email.split('@')[0],
+          nativeLanguage: detectedLanguage,
+        },
+      ]);
+
       setEmail('');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to add participant');
@@ -65,7 +79,7 @@ const create_room = () => {
   };
 
   const removeParticipant = (email: string) => {
-    setParticipants(participants.filter(p => p.email !== email));
+    setParticipants(participants.filter((p) => p.email !== email));
   };
 
   const createRoom = async () => {
@@ -78,16 +92,13 @@ const create_room = () => {
     try {
       const result = await createChatRoom(participants);
       if (result.success) {
-        Alert.alert(
-          'Success',
-          `Room created with code: ${result.roomCode}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push(`/Chat_room?roomCode=${result.roomCode}`)
-            }
-          ]
-        );
+        Alert.alert('Success', `Room created with code: ${result.roomCode}`, [
+          {
+            text: 'OK',
+            onPress: () =>
+              router.push(`/Chat_room?roomCode=${result.roomCode}`),
+          },
+        ]);
       } else {
         Alert.alert('Error', result.error || 'Failed to create room');
       }
@@ -100,25 +111,25 @@ const create_room = () => {
 
   return (
     <LinearGradient
-      colors={['#4c669f', '#3b5998', '#192f6a']}
+      colors={['#6685B5', '#E9F1FE']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
       style={styles.container}
     >
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           <Text style={styles.title}>Create New Chat Room</Text>
-          
-          {/* Add Participant Form */}
+
           <View style={styles.form}>
             <TextInput
               style={styles.input}
               placeholder="Participant Email"
-              placeholderTextColor="#ccc"
+              placeholderTextColor="#666"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
-
             <TouchableOpacity
               style={[styles.addButton, loading && styles.disabledButton]}
               onPress={addParticipant}
@@ -130,14 +141,17 @@ const create_room = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Participants List */}
           <View style={styles.participantsContainer}>
             <Text style={styles.sectionTitle}>Participants</Text>
             {participants.map((participant) => (
               <View key={participant.email} style={styles.participantItem}>
                 <View style={styles.participantInfo}>
-                  <Text style={styles.participantEmail}>{participant.email}</Text>
-                  <Text style={styles.participantLanguage}>Language: {participant.nativeLanguage}</Text>
+                  <Text style={styles.participantEmail}>
+                    {participant.email}
+                  </Text>
+                  <Text style={styles.participantLanguage}>
+                    Language: {participant.nativeLanguage}
+                  </Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => removeParticipant(participant.email)}
@@ -149,7 +163,6 @@ const create_room = () => {
             ))}
           </View>
 
-          {/* Create Room Button */}
           <TouchableOpacity
             style={[styles.createButton, loading && styles.disabledButton]}
             onPress={createRoom}
@@ -174,6 +187,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingTop: 100,
   },
   title: {
     fontSize: 24,
@@ -183,16 +197,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   form: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'white',
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#f0f0f0',
     borderRadius: 5,
     padding: 10,
-    color: '#fff',
+    color: '#000',
     marginBottom: 10,
   },
   addButton: {
@@ -207,7 +221,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   participantsContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 10,
     marginBottom: 20,
@@ -215,27 +229,33 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#333',
     marginBottom: 10,
   },
   participantItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#f0f0f0', // light gray
     padding: 10,
     borderRadius: 5,
     marginBottom: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
+  
   participantInfo: {
     flex: 1,
   },
   participantEmail: {
-    color: '#fff',
+    color: '#000',
     fontSize: 16,
   },
   participantLanguage: {
-    color: '#ccc',
+    color: '#555',
     fontSize: 14,
   },
   removeButton: {

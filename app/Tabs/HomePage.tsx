@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Image, TouchableOpacity, Text, View, ScrollView, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Image, Text, View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getUserChatRooms, UserChatRoom } from '../../scripts/firebaseDbAPI';
+import { useRouter } from 'expo-router';
 
 export default function HomePage() {
   const router = useRouter();
@@ -31,7 +31,7 @@ export default function HomePage() {
 
   const handleBackToLogin = () => {
     router.replace(`/`);
-  }
+  };
 
   const handleJoinRoom = (roomCode: string) => {
     router.push(`/Chat_room?roomCode=${roomCode}`);
@@ -47,16 +47,15 @@ export default function HomePage() {
       <TouchableOpacity onPress={handleBackToLogin} style={styles.logoutButton}>
         <View style={styles.logoutContainer}>
           <Image
-            source={require('./icons/left-arrow.png')} 
-            style={styles.logoutIcon} 
-            resizeMode="contain" 
+            source={require('./icons/right-arrow.png')}
+            style={styles.logoutIcon}
+            resizeMode="contain"
           />
           <Text style={styles.logoutText}>Logout</Text>
         </View>
       </TouchableOpacity>
 
       <View style={styles.contentContainer}>
-       
         <Text style={styles.title}>Your Chat Rooms</Text>
 
         {loading ? (
@@ -98,15 +97,18 @@ const styles = StyleSheet.create({
   logoutButton: {
     position: 'absolute',
     top: 50,
-    left: 30,
+    right: 30,
     alignItems: 'center',
+    zIndex: 10,
+    overflow: 'visible',
   },
   logoutContainer: {
+    flexDirection: 'column',
     alignItems: 'center',
   },
   logoutIcon: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 32,
   },
   logoutText: {
     color: 'white',
@@ -170,25 +172,5 @@ const styles = StyleSheet.create({
   lastVisited: {
     fontSize: 12,
     color: '#999',
-  },
-  bottomButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  button: {
-    backgroundColor: '#6685B5',
-    padding: 15,
-    borderRadius: 10,
-    minWidth: 100,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

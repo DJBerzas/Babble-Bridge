@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function JoinChat() {
   const [roomCode, setRoomCode] = useState('');
@@ -21,7 +22,12 @@ export default function JoinChat() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#6685B5', '#E9F1FE']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
+    >
       <View style={styles.content}>
         <Text style={styles.title}>Join Chat Room</Text>
         <TextInput
@@ -36,21 +42,20 @@ export default function JoinChat() {
         <TouchableOpacity style={styles.button} onPress={handleJoinChat}>
           <Text style={styles.buttonText}>Join Room</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     padding: 20,
   },
@@ -101,4 +106,4 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 16,
   },
-}); 
+});
