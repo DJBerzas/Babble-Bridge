@@ -1,6 +1,6 @@
 import { collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 
 // Firebase configuration for testing
@@ -23,7 +23,7 @@ const auth = getAuth(firebaseApp);
 console.log("Firestore instance created");
 
 // User session management
-let currentUser = null;
+let currentUser: User | null = null;
 
 // Listen for auth state changes
 onAuthStateChanged(auth, (user) => {
@@ -98,7 +98,7 @@ export async function logoutUser() {
     }
 }
 
-export function getCurrentUser() {
+export function getCurrentUser(): User | null {
     return currentUser;
 }
 

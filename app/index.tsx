@@ -3,6 +3,7 @@ import { Text, View, Image, TextInput, TouchableOpacity, Alert } from "react-nat
 import { Link, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { loginUser, registerUser } from '../scripts/firebaseDbAPI';
+import LanguageSelector from './components/LanguageSelector';
 
 // Hides the default header (optional)
 export const options = {
@@ -14,7 +15,7 @@ export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [nativeLanguage, setNativeLanguage] = useState('English');
+  const [nativeLanguage, setNativeLanguage] = useState('en');
 
   const handleAuth = async () => {
     try {
@@ -35,7 +36,7 @@ export default function Index() {
           Alert.alert('Registration Failed', result.error);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message);
     }
   };
@@ -75,19 +76,13 @@ export default function Index() {
               borderRadius: 5,
             }}
           />
-          <TextInput
-            value={nativeLanguage}
-            onChangeText={setNativeLanguage}
-            placeholder="Native Language (e.g., English)"
-            placeholderTextColor="#666"
-            style={{
-              backgroundColor: 'white',
-              padding: 10,
-              marginVertical: 10,
-              width: '80%',
-              borderRadius: 5,
-            }}
-          />
+          <View style={{ width: '80%', marginVertical: 10 }}>
+            <LanguageSelector
+              value={nativeLanguage}
+              onChange={setNativeLanguage}
+              placeholder="Select Native Language"
+            />
+          </View>
         </>
       )}
 
