@@ -66,6 +66,15 @@ export default function ChatRoom() {
     }
   }, [userNativeLanguage]);
 
+  // Add periodic message refresh
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      loadChatRoom();
+    }, 2000); // Refresh every 2 seconds
+
+    return () => clearInterval(refreshInterval);
+  }, [roomCode, userNativeLanguage]);
+
   const loadChatRoom = async () => {
     try {
       const result = await getChatRoom(roomCode as string);
@@ -96,17 +105,9 @@ export default function ChatRoom() {
 
       const result = await addMessageToChatRoom(roomCode as string, messageData, userNativeLanguage);
       if (result.success) {
-        // Create new message object
-        const newMessageObj: Message = {
-          text: messageData.text,
-          sender: messageData.sender,
-          senderId: getCurrentUser()?.uid || '',
-          timestamp: new Date().toISOString(),
-        };
-
-        // Update local state instead of reloading
-        setMessages(prevMessages => [...prevMessages, newMessageObj]);
         setNewMessage('');
+        // Reload messages after sending
+        await loadChatRoom();
       } else {
         setError('Failed to send message');
       }

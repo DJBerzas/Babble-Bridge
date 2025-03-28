@@ -289,12 +289,16 @@ export function getLanguageCode(languageName: string): string {
     // First check if the input is already a language code
     const languageMap: { [key: string]: string } = {
         // Full language names to codes
-        'English': 'en',
+        'English': 'en-US',  // Default to US English
+        'English (US)': 'en-US',
+        'English (UK)': 'en-GB',
         'Spanish': 'es',
         'French': 'fr',
         'German': 'de',
         'Italian': 'it',
-        'Portuguese': 'pt',
+        'Portuguese': 'pt-BR',  // Default to Brazilian Portuguese
+        'Portuguese (Brazil)': 'pt-BR',
+        'Portuguese (Portugal)': 'pt-PT',
         'Russian': 'ru',
         'Chinese': 'zh',
         'Japanese': 'ja',
@@ -321,12 +325,16 @@ export function getLanguageCode(languageName: string): string {
         'Ukrainian': 'uk',
         'Catalan': 'ca',
         // Language codes to themselves (for direct code input)
-        'en': 'en',
+        'en': 'en-US',  // Default to US English
+        'en-US': 'en-US',
+        'en-GB': 'en-GB',
         'es': 'es',
         'fr': 'fr',
         'de': 'de',
         'it': 'it',
-        'pt': 'pt',
+        'pt': 'pt-BR',  // Default to Brazilian Portuguese
+        'pt-BR': 'pt-BR',
+        'pt-PT': 'pt-PT',
         'ru': 'ru',
         'zh': 'zh',
         'ja': 'ja',
@@ -356,8 +364,8 @@ export function getLanguageCode(languageName: string): string {
 
     const code = languageMap[languageName];
     if (!code) {
-        console.warn(`No language code found for: ${languageName}, defaulting to 'en'`);
-        return 'en';
+        console.warn(`No language code found for: ${languageName}, defaulting to 'en-US'`);
+        return 'en-US';
     }
     return code;
 }
