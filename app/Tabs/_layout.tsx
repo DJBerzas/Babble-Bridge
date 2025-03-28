@@ -1,38 +1,75 @@
 import React from 'react';
-import { Image, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
 import { Tabs } from 'expo-router';
-//import {images} from "../../../../../constants/images";
-
 
 const _layout = () => {
   return (
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
+        tabBarStyle: {
+          position: 'absolute',
+          bottom: 16,
+          left: 16,
+          right: 16,
+          height: 80,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          elevation: 10,
+        },
       }}
     >
       <Tabs.Screen
         name="HomePage"
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: 'center' }}>
+          tabBarIcon: () => (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 20,
+                paddingVertical: 20,
+                borderRadius: 20,
+                backgroundColor: '#6685B5',
+              }}
+            >
               <Image
                 source={require('./icons/home.png')}
                 style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: focused ? '#007AFF' : '#8E8E93',
+                  width: 26,
+                  height: 26,
+                  tintColor: '#fff',
                 }}
               />
-              <Text
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="QR_Scan"
+        options={{
+          headerShown: false,
+          tabBarIcon: () => (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 20,
+                paddingVertical: 20,
+                borderRadius: 20,
+                backgroundColor: '#6685B5',
+              }}
+            >
+              <Image
+                source={require('./icons/goodCamera.png')}
                 style={{
-                  fontSize: 10,
-                  color: focused ? '#007AFF' : '#8E8E93',
+                  width: 26,
+                  height: 26,
+                  tintColor: '#fff',
                 }}
-              >
-                Home
-              </Text>
+              />
             </View>
           ),
         }}
@@ -42,24 +79,25 @@ const _layout = () => {
         name="profile"
         options={{
           headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <View style={{ alignItems: 'center' }}>
+          tabBarIcon: () => (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 20,
+                paddingVertical: 20,
+                borderRadius: 20,
+                backgroundColor: '#6685B5',
+              }}
+            >
               <Image
                 source={require('./icons/profile.png')}
                 style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: focused ? '#007AFF' : '#8E8E93',
+                  width: 25,
+                  height: 28,
+                  tintColor: '#fff',
                 }}
               />
-              <Text
-                style={{
-                  fontSize: 10,
-                  color: focused ? '#007AFF' : '#8E8E93',
-                }}
-              >
-                Profile
-              </Text>
             </View>
           ),
         }}

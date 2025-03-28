@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Image, TouchableOpacity, Text, View, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
 import { getUserChatRooms, UserChatRoom } from '../../scripts/firebaseDbAPI';
 import QRCode from 'react-native-qrcode-svg';
 
-const HomePage = () => {
+export default function HomePage() {
   const router = useRouter();
   const [chatRooms, setChatRooms] = useState<UserChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,8 +31,8 @@ const HomePage = () => {
   };
 
   const handleBackToLogin = () => {
-    router.back();
-  };
+    router.back(); 
+  }
 
   const handleJoinRoom = (roomCode: string) => {
     router.push(`/Chat_room?roomCode=${roomCode}`);
@@ -60,8 +59,7 @@ const HomePage = () => {
       <View style={styles.contentContainer}>
         <QRCode value="https://github.com" />
         <Text style={styles.title}>Your Chat Rooms</Text>
-        
-        
+
         {loading ? (
           <Text style={styles.loadingText}>Loading chat rooms...</Text>
         ) : error ? (
@@ -90,23 +88,9 @@ const HomePage = () => {
           </ScrollView>
         )}
       </View>
-
-      <View style={styles.bottomButtons}>
-        <Link href="/Tabs/profile" style={styles.button}>
-          <Text style={styles.buttonText}>Profile</Text>
-        </Link>
-
-        <Link href="/Tabs/QR_Scan" style={styles.button}>
-          <Text style={styles.buttonText}>Scan QR</Text>
-        </Link>
-
-        <Link href="/Chat_room" style={styles.button}>
-          <Text style={styles.buttonText}>New Chat</Text>
-        </Link>
-      </View>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -208,5 +192,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default HomePage;
