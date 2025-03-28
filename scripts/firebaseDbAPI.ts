@@ -286,7 +286,9 @@ export async function getChatRoom(roomCode: string) {
 }
 
 export function getLanguageCode(languageName: string): string {
+    // First check if the input is already a language code
     const languageMap: { [key: string]: string } = {
+        // Full language names to codes
         'English': 'en',
         'Spanish': 'es',
         'French': 'fr',
@@ -318,70 +320,38 @@ export function getLanguageCode(languageName: string): string {
         'Hungarian': 'hu',
         'Ukrainian': 'uk',
         'Catalan': 'ca',
-        'Afrikaans': 'af',
-        'Albanian': 'sq',
-        'Amharic': 'am',
-        'Armenian': 'hy',
-        'Azerbaijani': 'az',
-        'Basque': 'eu',
-        'Belarusian': 'be',
-        'Bosnian': 'bs',
-        'Bulgarian': 'bg',
-        'Croatian': 'hr',
-        'Estonian': 'et',
-        'Galician': 'gl',
-        'Georgian': 'ka',
-        'Gujarati': 'gu',
-        'Hausa': 'ha',
-        'Hawaiian': 'haw',
-        'Icelandic': 'is',
-        'Igbo': 'ig',
-        'Irish': 'ga',
-        'Javanese': 'jv',
-        'Kannada': 'kn',
-        'Kazakh': 'kk',
-        'Khmer': 'km',
-        'Kurdish': 'ku',
-        'Kyrgyz': 'ky',
-        'Lao': 'lo',
-        'Latin': 'la',
-        'Latvian': 'lv',
-        'Lithuanian': 'lt',
-        'Luxembourgish': 'lb',
-        'Macedonian': 'mk',
-        'Malagasy': 'mg',
-        'Malayalam': 'ml',
-        'Maltese': 'mt',
-        'Maori': 'mi',
-        'Marathi': 'mr',
-        'Mongolian': 'mn',
-        'Myanmar': 'my',
-        'Nepali': 'ne',
-        'Norwegian': 'no',
-        'Pashto': 'ps',
-        'Persian': 'fa',
-        'Punjabi': 'pa',
-        'Samoan': 'sm',
-        'Scots Gaelic': 'gd',
-        'Serbian': 'sr',
-        'Sesotho': 'st',
-        'Shona': 'sn',
-        'Sindhi': 'sd',
-        'Sinhala': 'si',
-        'Slovak': 'sk',
-        'Slovenian': 'sl',
-        'Somali': 'so',
-        'Sundanese': 'su',
-        'Swahili': 'sw',
-        'Tajik': 'tg',
-        'Tamil': 'ta',
-        'Telugu': 'te',
-        'Uzbek': 'uz',
-        'Welsh': 'cy',
-        'Xhosa': 'xh',
-        'Yiddish': 'yi',
-        'Yoruba': 'yo',
-        'Zulu': 'zu'
+        // Language codes to themselves (for direct code input)
+        'en': 'en',
+        'es': 'es',
+        'fr': 'fr',
+        'de': 'de',
+        'it': 'it',
+        'pt': 'pt',
+        'ru': 'ru',
+        'zh': 'zh',
+        'ja': 'ja',
+        'ko': 'ko',
+        'ar': 'ar',
+        'hi': 'hi',
+        'bn': 'bn',
+        'nl': 'nl',
+        'pl': 'pl',
+        'tr': 'tr',
+        'vi': 'vi',
+        'th': 'th',
+        'el': 'el',
+        'he': 'he',
+        'id': 'id',
+        'ms': 'ms',
+        'fil': 'fil',
+        'sv': 'sv',
+        'da': 'da',
+        'fi': 'fi',
+        'cs': 'cs',
+        'ro': 'ro',
+        'hu': 'hu',
+        'uk': 'uk',
+        'ca': 'ca'
     };
 
     const code = languageMap[languageName];
@@ -441,6 +411,14 @@ export async function translateMessage(message: string, targetLanguage: string, 
 
         const translatedText = response.data.data.translations[0].translatedText;
         console.log('Successfully translated text:', translatedText);
+        console.log('Translation details:', {
+            original: message,
+            translated: translatedText,
+            source: sourceLanguage,
+            target: targetLanguage,
+            sourceCode,
+            targetCode
+        });
         
         return {
             text: translatedText,
@@ -452,7 +430,14 @@ export async function translateMessage(message: string, targetLanguage: string, 
             message: error.message,
             code: error.code,
             response: error.response?.data,
-            status: error.response?.status
+            status: error.response?.status,
+            request: {
+                message,
+                sourceLanguage,
+                targetLanguage,
+                sourceCode: getLanguageCode(sourceLanguage),
+                targetCode: getLanguageCode(targetLanguage)
+            }
         });
         
         // Return original message if translation fails
@@ -655,6 +640,85 @@ export async function getUserData(userId: string): Promise<{ success: boolean; u
         }
     } catch (error: any) {
         console.error("Error fetching user data:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+export async function detectLanguage(text: string): Promise<string> {
+    try {
+        const response = await axios.post(
+            `https://translation.googleapis.com/language/translate/v2/detect?key=${GOOGLE_TRANSLATE_API_KEY}`,
+            { q: text }
+        );
+
+        if (response.data?.data?.detections?.[0]?.[0]?.language) {
+            const detectedCode = response.data.data.detections[0][0].language;
+            // Find the language name that corresponds to this code
+            for (const [languageName, code] of Object.entries({
+                'English': 'en', 'Spanish': 'es', 'French': 'fr', 'German': 'de',
+                'Italian': 'it', 'Portuguese': 'pt', 'Russian': 'ru', 'Chinese': 'zh',
+                'Japanese': 'ja', 'Korean': 'ko', 'Arabic': 'ar', 'Hindi': 'hi',
+                'Bengali': 'bn', 'Dutch': 'nl', 'Polish': 'pl', 'Turkish': 'tr',
+                'Vietnamese': 'vi', 'Thai': 'th', 'Greek': 'el', 'Hebrew': 'he',
+                'Indonesian': 'id', 'Malay': 'ms', 'Filipino': 'fil', 'Swedish': 'sv',
+                'Danish': 'da', 'Finnish': 'fi', 'Czech': 'cs', 'Romanian': 'ro',
+                'Hungarian': 'hu', 'Ukrainian': 'uk', 'Catalan': 'ca'
+            })) {
+                if (code === detectedCode) {
+                    return languageName;
+                }
+            }
+        }
+        return 'English';
+    } catch (error) {
+        console.error('Error detecting language:', error);
+        return 'English';
+    }
+}
+
+export async function addParticipantToRoom(roomCode: string, participant: Participant) {
+    try {
+        const chatRoomRef = doc(db, "ChatRooms", roomCode);
+        const chatRoomDoc = await getDoc(chatRoomRef);
+
+        if (!chatRoomDoc.exists()) {
+            throw new Error("Chat room not found");
+        }
+
+        const chatRoomData = chatRoomDoc.data() as ChatRoomData;
+        
+        // Check if participant already exists
+        const existingParticipant = chatRoomData.participants.find(p => p.id === participant.id);
+        if (existingParticipant) {
+            return { success: true }; // Participant already exists
+        }
+
+        // Add participant to participants array
+        const updatedParticipants = [...chatRoomData.participants, participant];
+
+        // Add new language to messagesByLanguage if it doesn't exist
+        const updatedMessagesByLanguage = { ...chatRoomData.messagesByLanguage };
+        if (!updatedMessagesByLanguage[participant.nativeLanguage]) {
+            updatedMessagesByLanguage[participant.nativeLanguage] = [];
+        }
+
+        // Update languages array if needed
+        const updatedLanguages = [...new Set([...chatRoomData.languages, participant.nativeLanguage])];
+
+        // Update the chat room
+        await updateDoc(chatRoomRef, {
+            participants: updatedParticipants,
+            languages: updatedLanguages,
+            messagesByLanguage: updatedMessagesByLanguage,
+            lastUpdated: new Date().toISOString()
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error adding participant:", error);
         return {
             success: false,
             error: error.message

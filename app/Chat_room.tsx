@@ -10,7 +10,16 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
-import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData, getCurrentUser, getUserData, getLanguageCode } from '../scripts/firebaseDbAPI';
+import { addMessageToChatRoom, 
+  getChatRoom, 
+  Message, 
+  ChatRoomData, 
+  getCurrentUser, 
+  getUserData, 
+  getLanguageCode, 
+  addParticipantToRoom, 
+  Participant } 
+  from '../scripts/firebaseDbAPI';
 import { useLocalSearchParams } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -31,11 +40,24 @@ export default function ChatRoom() {
         const userData = await getUserData(user.uid);
         if (userData.success && userData.userData) {
           setUserNativeLanguage(userData.userData.nativeLanguage);
+          
+          // Add user as participant to the room
+          const participant: Participant = {
+            id: user.uid,
+            email: user.email || '',
+            username: userData.userData.username,
+            nativeLanguage: userData.userData.nativeLanguage
+          };
+          
+          const result = await addParticipantToRoom(roomCode as string, participant);
+          if (!result.success) {
+            console.error('Failed to add participant:', result.error);
+          }
         }
       }
     };
     loadUserData();
-  }, []);
+  }, [roomCode]);
 
   // Reload messages when user's native language changes
   useEffect(() => {
