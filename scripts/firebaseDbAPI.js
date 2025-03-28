@@ -1,11 +1,106 @@
 import { collection, addDoc, getDocs, doc, setDoc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { getFirestore } from 'firebase/firestore';
-import firebaseApp from '../src/config/firebaseConfig.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
+import { initializeApp } from 'firebase/app';
 
+// Firebase configuration for testing
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCV7-PIC7MOlbTd-aZtVSP7KgR9BKy_kCo",
+  authDomain: "babblebridge.firebaseapp.com",
+  projectId: "babblebridge",
+  storageBucket: "babblebridge.firebasestorage.app",
+  messagingSenderId: "157389739525",
+  appId: "1:157389739525:web:4ef10b80a7193c275b2e6c",
+  measurementId: "G-QHD4TMNK89"
+};
+
+// Initialize Firebase with the config
+const firebaseApp = initializeApp(FIREBASE_CONFIG);
 console.log("Firebase App initialized:", firebaseApp);
 
 const db = getFirestore(firebaseApp);
+const auth = getAuth(firebaseApp);
 console.log("Firestore instance created");
+
+// User session management
+let currentUser = null;
+
+// Listen for auth state changes
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    console.log("User is signed in:", user.email);
+  } else {
+    currentUser = null;
+    console.log("User is signed out");
+  }
+});
+
+export async function loginUser(email, password) {
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        currentUser = userCredential.user;
+        return {
+            success: true,
+            user: {
+                id: userCredential.user.uid,
+                email: userCredential.user.email
+            }
+        };
+    } catch (error) {
+        console.error("Login error:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+export async function registerUser(email, password, username, nativeLanguage) {
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userData = {
+            id: userCredential.user.uid,
+            email: email,
+            username: username,
+            nativeLanguage: nativeLanguage,
+            createdAt: new Date().toISOString()
+        };
+
+        // Store additional user data in Firestore
+        await setDoc(doc(db, "Users", userCredential.user.uid), userData);
+        
+        currentUser = userCredential.user;
+        return {
+            success: true,
+            user: userData
+        };
+    } catch (error) {
+        console.error("Registration error:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+export async function logoutUser() {
+    try {
+        await signOut(auth);
+        currentUser = null;
+        return { success: true };
+    } catch (error) {
+        console.error("Logout error:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+export function getCurrentUser() {
+    return currentUser;
+}
 
 export async function addTestUser() {
     try {
@@ -138,6 +233,10 @@ export async function getChatRoom(roomCode) {
 
 export async function addMessageToChatRoom(roomCode, message, senderLanguage) {
     try {
+        if (!currentUser) {
+            throw new Error("User must be logged in to send messages");
+        }
+
         console.log("Adding message to chat room:", roomCode);
         console.log("Raw message data:", JSON.stringify(message, null, 2));
         
@@ -146,14 +245,10 @@ export async function addMessageToChatRoom(roomCode, message, senderLanguage) {
         // Create the message object with all required fields
         const messageObject = {
             text: String(message.text),
-            sender: String(message.sender),
+            sender: currentUser.email,
+            senderId: currentUser.uid,
             timestamp: new Date().toISOString()
         };
-
-        const rooms = getRoomsByLanguage(roomCode);
-
-        //iterate through the rooms array and append the translated message to the appropriate language array
-
 
         console.log("Formatted message object:", JSON.stringify(messageObject, null, 2));
 
