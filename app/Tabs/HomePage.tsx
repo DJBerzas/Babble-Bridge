@@ -30,7 +30,7 @@ export default function HomePage() {
   };
 
   const handleBackToLogin = () => {
-    router.back(); 
+    router.replace(`/`);
   }
 
   const handleJoinRoom = (roomCode: string) => {
