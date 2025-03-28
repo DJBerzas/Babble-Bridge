@@ -58,7 +58,7 @@ const _layout = () => {
                   color: focused ? '#007AFF' : '#8E8E93',
                 }}
               >
-                Chat Room
+                Profile
               </Text>
             </View>
           ),

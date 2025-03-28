@@ -40,7 +40,7 @@ const HomePage = () => {
         
       </Link>
        
-      <Link href="/Tabs/Chat_room">
+      <Link href="/Chat_room">
        
       </Link>
     </LinearGradient>
