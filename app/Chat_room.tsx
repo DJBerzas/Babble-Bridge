@@ -8,8 +8,9 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
 } from 'react-native';
-import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData } from '../scripts/firebaseDbAPI';
+import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData, getCurrentUser } from '../scripts/firebaseDbAPI';
 import { useLocalSearchParams } from 'expo-router';
 
 export default function ChatRoom() {
@@ -17,92 +18,125 @@ export default function ChatRoom() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      setCurrentUserEmail(user.email);
+    }
     loadChatRoom();
   }, []);
 
   const loadChatRoom = async () => {
-    const result = await getChatRoom(roomCode as string);
-    if (result.success && result.chatRoom) {
-      const chatRoom = result.chatRoom as ChatRoomData;
-      const englishMessages = chatRoom.messagesByLanguage?.English || [];
-      console.log('Chat room data:', chatRoom);
-      console.log('English messages:', JSON.stringify(englishMessages, null, 2));
-      setMessages(englishMessages);
-    } else {
+    try {
+      const result = await getChatRoom(roomCode as string);
+      if (result.success && result.chatRoom) {
+        const chatRoom = result.chatRoom as ChatRoomData;
+        const englishMessages = chatRoom.messagesByLanguage?.English || [];
+        setMessages(englishMessages);
+      } else {
+        setError('Failed to load chat room');
+      }
+    } catch (err) {
+      console.error('Error loading chat room:', err);
       setError('Failed to load chat room');
     }
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !currentUserEmail) return;
 
     try {
       const messageData = {
         text: newMessage.trim(),
-        sender: 'User1', // Hardcoded for now
+        sender: currentUserEmail,
       };
 
-      console.log('Sending message:', messageData);
       const result = await addMessageToChatRoom(roomCode as string, messageData, 'English');
       if (result.success) {
+        // Create new message object
+        const newMessageObj: Message = {
+          text: messageData.text,
+          sender: messageData.sender,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Update local state instead of reloading
+        setMessages(prevMessages => [...prevMessages, newMessageObj]);
         setNewMessage('');
-        loadChatRoom(); // Reload messages
       } else {
         setError('Failed to send message');
       }
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch (err) {
+      console.error('Error sending message:', err);
       setError('Failed to send message');
     }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Room: {roomCode}</Text>
       </View>
 
-      <ScrollView style={styles.messagesContainer}>
-        {Array.isArray(messages) && messages.map((message, index) => {
-          console.log('Rendering message:', JSON.stringify(message, null, 2));
-          return (
-            <View 
-              key={index} 
-              style={[
-                styles.messageBox,
-                message.sender === 'User1' ? styles.sentMessage : styles.receivedMessage
-              ]}
-            >
-              <Text style={styles.senderText}>{String(message.sender)}</Text>
-              <Text style={styles.messageText}>{String(message.text)}</Text>
-              <Text style={styles.timestampText}>
-                {new Date(message.timestamp || '').toLocaleTimeString()}
-              </Text>
-            </View>
-          );
-        })}
-      </ScrollView>
-
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.inputContainer}
+        style={styles.keyboardAvoidingView}
       >
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message..."
-          placeholderTextColor="#666"
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
+        <ScrollView 
+          style={styles.messagesContainer}
+          contentContainerStyle={styles.messagesContentContainer}
+        >
+          {Array.isArray(messages) && messages.map((message, index) => {
+            const isCurrentUser = message.sender === currentUserEmail;
+            return (
+              <View 
+                key={index} 
+                style={[
+                  styles.messageBox,
+                  isCurrentUser ? styles.sentMessage : styles.receivedMessage
+                ]}
+              >
+                <Text style={[
+                  styles.senderText,
+                  isCurrentUser ? styles.sentSenderText : styles.receivedSenderText
+                ]}>
+                  {String(message.sender)}
+                </Text>
+                <Text style={[
+                  styles.messageText,
+                  isCurrentUser ? styles.sentMessageText : styles.receivedMessageText
+                ]}>
+                  {String(message.text)}
+                </Text>
+                <Text style={[
+                  styles.timestampText,
+                  isCurrentUser ? styles.sentTimestampText : styles.receivedTimestampText
+                ]}>
+                  {new Date(message.timestamp || '').toLocaleTimeString()}
+                </Text>
+              </View>
+            );
+          })}
+        </ScrollView>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            placeholder="Type a message..."
+            placeholderTextColor="#666"
+          />
+          <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -121,8 +155,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   messagesContainer: {
     flex: 1,
+  },
+  messagesContentContainer: {
     padding: 10,
   },
   messageBox: {
@@ -141,18 +180,33 @@ const styles = StyleSheet.create({
   },
   senderText: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 4,
+  },
+  sentSenderText: {
+    color: '#fff',
+  },
+  receivedSenderText: {
+    color: '#666',
   },
   messageText: {
     fontSize: 16,
+  },
+  sentMessageText: {
+    color: '#fff',
+  },
+  receivedMessageText: {
     color: '#000',
   },
   timestampText: {
     fontSize: 10,
-    color: '#666',
     marginTop: 4,
     alignSelf: 'flex-end',
+  },
+  sentTimestampText: {
+    color: '#fff',
+  },
+  receivedTimestampText: {
+    color: '#666',
   },
   inputContainer: {
     flexDirection: 'row',

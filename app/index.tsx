@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Text, View, Image, TextInput } from "react-native";
-import { Link } from "expo-router";
+import { Text, View, Image, TextInput, TouchableOpacity, Alert } from "react-native";
+import { Link, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { loginUser, registerUser } from '../scripts/firebaseDbAPI';
+import LanguageSelector from './components/LanguageSelector';
 
 // Hides the default header (optional)
 export const options = {
@@ -9,8 +11,35 @@ export const options = {
 };
 
 export default function Index() {
-  const [login, setLogin] = useState('');
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [nativeLanguage, setNativeLanguage] = useState('en');
+
+  const handleAuth = async () => {
+    try {
+      if (isLogin) {
+        const result = await loginUser(email, password);
+        if (result.success) {
+          router.replace('/Tabs/HomePage');
+        } else {
+          Alert.alert('Login Failed', result.error);
+        }
+      } else {
+        const result = await registerUser(email, password, username, nativeLanguage);
+        if (result.success) {
+          Alert.alert('Success', 'Registration successful! Please login.', [
+            { text: 'OK', onPress: () => setIsLogin(true) }
+          ]);
+        } else {
+          Alert.alert('Registration Failed', result.error);
+        }
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
+  };
 
   return (
     <LinearGradient
@@ -21,7 +50,7 @@ export default function Index() {
     >
       {/* Welcome text at the top */}
       <Text style={{ fontSize: 32, color: 'white', marginBottom: 20, fontWeight: 'bold' }}>
-        Welcome!
+        {isLogin ? 'Welcome Back!' : 'Create Account'}
       </Text>
 
       {/* Image below the welcome text */}
@@ -31,12 +60,40 @@ export default function Index() {
         resizeMode="contain"
       />
 
+      {/* Registration fields */}
+      {!isLogin && (
+        <>
+          <TextInput
+            value={username}
+            onChangeText={setUsername}
+            placeholder="Username"
+            placeholderTextColor="#666"
+            style={{
+              backgroundColor: 'white',
+              padding: 10,
+              marginVertical: 10,
+              width: '80%',
+              borderRadius: 5,
+            }}
+          />
+          <View style={{ width: '80%', marginVertical: 10 }}>
+            <LanguageSelector
+              value={nativeLanguage}
+              onChange={setNativeLanguage}
+              placeholder="Select Native Language"
+            />
+          </View>
+        </>
+      )}
+
       {/* Login & Password Inputs */}
       <TextInput
-        value={login}
-        onChangeText={setLogin}
-        placeholder="Login"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="Email"
         placeholderTextColor="#666"
+        keyboardType="email-address"
+        autoCapitalize="none"
         style={{
           backgroundColor: 'white',
           padding: 10,
@@ -60,12 +117,32 @@ export default function Index() {
         }}
       />
 
-      {/* Link to Homepage */}
-      <Link href="/Tabs/HomePage">
-        <Text style={{ fontSize: 18, color: 'white', textDecorationLine: 'underline', marginTop: 20 }}>
-          Go to Homepage
+      {/* Auth Button */}
+      <TouchableOpacity
+        onPress={handleAuth}
+        style={{
+          backgroundColor: '#6685B5',
+          padding: 15,
+          borderRadius: 5,
+          width: '80%',
+          alignItems: 'center',
+          marginTop: 20,
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+          {isLogin ? 'Login' : 'Register'}
         </Text>
-      </Link>
+      </TouchableOpacity>
+
+      {/* Toggle between Login and Register */}
+      <TouchableOpacity
+        onPress={() => setIsLogin(!isLogin)}
+        style={{ marginTop: 20 }}
+      >
+        <Text style={{ color: 'white', textDecorationLine: 'underline' }}>
+          {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+        </Text>
+      </TouchableOpacity>
     </LinearGradient>
   );
 }
