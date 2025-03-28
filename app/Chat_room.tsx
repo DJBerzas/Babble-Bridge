@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData, getCurrentUser } from '../scripts/firebaseDbAPI';
 import { useLocalSearchParams } from 'expo-router';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function ChatRoom() {
   const { roomCode } = useLocalSearchParams();
@@ -19,6 +20,7 @@ export default function ChatRoom() {
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false); // State to toggle QR code visibility
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -43,9 +45,6 @@ export default function ChatRoom() {
       setError('Failed to load chat room');
     }
   };
-
-
-
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUserEmail) return;
@@ -81,7 +80,24 @@ export default function ChatRoom() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Room: {roomCode}</Text>
+        
+        {/* Button to toggle QR code visibility */}
+        <TouchableOpacity 
+          style={styles.qrButton} 
+          onPress={() => setShowQRCode(!showQRCode)}
+        >
+          <Text style={styles.qrButtonText}>
+            {showQRCode ? 'Hide QR Code' : 'Show QR Code'}
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Conditionally render QR code */}
+      {showQRCode && (
+        <View style={styles.qrContainer}>
+          <QRCode value={`myapp://Chat_room?roomCode=${roomCode}`} size={200} />
+        </View>
+      )}
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -157,6 +173,21 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  qrButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: '#007AFF',
+    borderRadius: 5,
+  },
+  qrButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  qrContainer: {
+    alignItems: 'center', // Centers the QR code horizontally
+    marginTop: 30, // Adds margin to push it further down
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -243,4 +274,4 @@ const styles = StyleSheet.create({
     padding: 10,
     textAlign: 'center',
   },
-}); 
+});
