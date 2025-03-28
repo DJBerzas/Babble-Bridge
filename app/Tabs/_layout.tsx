@@ -74,7 +74,33 @@ const _layout = () => {
           ),
         }}
       />
-
+      <Tabs.Screen
+        name="join_chat"
+        options={{
+          headerShown: false,
+          tabBarIcon: () => (
+            <View
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 20,
+                paddingVertical: 20,
+                borderRadius: 20,
+                backgroundColor: '#6685B5',
+              }}
+            >
+              <Image
+                source={require('./icons/Pound.png')}
+                style={{
+                  width: 28,
+                  height: 28,
+                  tintColor: '#fff',
+                }}
+              />
+            </View>
+          ),
+        }}
+      />
       <Tabs.Screen
         name="profile"
         options={{
@@ -91,9 +117,9 @@ const _layout = () => {
               }}
             >
               <Image
-                source={require('./icons/profile.png')}
+                source={require('./icons/plus.png')}
                 style={{
-                  width: 25,
+                  width: 28,
                   height: 28,
                   tintColor: '#fff',
                 }}
@@ -102,6 +128,8 @@ const _layout = () => {
           ),
         }}
       />
+
+      
     </Tabs>
   );
 };
