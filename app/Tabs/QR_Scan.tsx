@@ -1,5 +1,6 @@
+import React from 'react';
 import { Camera, CameraView } from "expo-camera";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useRouter, useFocusEffect } from "expo-router";
 import {
   AppState,
   Platform,
@@ -18,7 +19,9 @@ export default function QR_Scan() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
 
+  // Request camera permissions when component mounts
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
@@ -26,6 +29,7 @@ export default function QR_Scan() {
     })();
   }, []);
 
+  // Handle app state changes
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
       if (
@@ -41,6 +45,20 @@ export default function QR_Scan() {
       subscription.remove();
     };
   }, []);
+
+  // Handle tab focus/unfocus
+  useFocusEffect(
+    React.useCallback(() => {
+      // When tab is focused, activate camera
+      setIsCameraActive(true);
+      
+      // When tab is unfocused, deactivate camera
+      return () => {
+        setIsCameraActive(false);
+        qrLock.current = false;
+      };
+    }, [])
+  );
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
     if (data && !qrLock.current) {
@@ -115,14 +133,16 @@ export default function QR_Scan() {
         }}
       />
       {Platform.OS === "android" ? <StatusBar hidden /> : null}
-      <CameraView
-        style={StyleSheet.absoluteFillObject}
-        facing="back"
-        onBarcodeScanned={handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
-      />
+      {isCameraActive && (
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          facing="back"
+          onBarcodeScanned={handleBarCodeScanned}
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
+        />
+      )}
       <Overlay />
     </SafeAreaView>
   );
