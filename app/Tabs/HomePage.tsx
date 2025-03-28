@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { getUserChatRooms, UserChatRoom } from '../../scripts/firebaseDbAPI';
-import QRCode from 'react-native-qrcode-svg';
 
 const HomePage = () => {
   const router = useRouter();
@@ -58,7 +57,7 @@ const HomePage = () => {
       </TouchableOpacity>
 
       <View style={styles.contentContainer}>
-        <QRCode value="https://github.com" />
+       
         <Text style={styles.title}>Your Chat Rooms</Text>
         
         
@@ -134,6 +133,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 120,
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
   title: {
     fontSize: 24,

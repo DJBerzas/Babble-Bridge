@@ -46,9 +46,10 @@ export default function QR_Scan() {
     if (data && !qrLock.current) {
       qrLock.current = true;
       try {
-        // Check if the QR code contains a valid room code (6 digits)
-        const roomCode = data.trim();
-        if (/^\d{6}$/.test(roomCode)) {
+        // Assuming the URL format is myapp://Tabs/Chat_room?roomCode=547428
+        const roomCodeMatch = data.match(/roomCode=(\d{6})/);
+        if (roomCodeMatch) {
+          const roomCode = roomCodeMatch[1]; // Extract the room code
           router.push(`/Chat_room?roomCode=${roomCode}`);
         } else {
           Alert.alert(
@@ -71,6 +72,7 @@ export default function QR_Scan() {
       }
     }
   };
+  
 
   if (hasPermission === null) {
     return (
