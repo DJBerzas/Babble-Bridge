@@ -47,103 +47,101 @@ export default function Index() {
       colors={["#6685B5", "#E9F1FE"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1, paddingTop: 50, alignItems: "center" }}
+      style={{ flex: 1 }}
     >
-      {/* Welcome text at the top */}
-      <Text style={{ fontSize: 32, color: 'white', marginBottom: 20, fontWeight: 'bold' }}>
-        {isLogin ? 'Welcome Back!' : 'Create Account'}
-      </Text>
-
-      {/* Image below the welcome text */}
-      <Image
-        source={require("./globe.png")}
-        style={{ width: 150, height: 150, marginBottom: 20 }}
-        resizeMode="contain"
-      />
-
-      {/* Registration fields */}
-      {!isLogin && (
-        <>
-          <TextInput
-            value={username}
-            onChangeText={setUsername}
-            placeholder="Username"
-            placeholderTextColor="#666"
-            style={{
-              backgroundColor: 'white',
-              padding: 10,
-              marginVertical: 10,
-              width: '80%',
-              borderRadius: 5,
-            }}
-          />
-          <View style={{ width: '80%', marginVertical: 10 }}>
-            <LanguageSelector
-              value={nativeLanguage}
-              onChange={setNativeLanguage}
-              placeholder="Select Native Language"
+      {/* 👇 Wrapper that moves everything down */}
+      <View style={{ flex: 1, alignItems: 'center', paddingTop: 80 }}>
+        <Text style={{ fontSize: 32, color: 'white', marginBottom: 20, fontWeight: 'bold' }}>
+          {isLogin ? 'Welcome Back!' : 'Create Account'}
+        </Text>
+  
+        <Image
+          source={require("./globe.png")}
+          style={{ width: 150, height: 150, marginBottom: 20 }}
+          resizeMode="contain"
+        />
+  
+        {!isLogin && (
+          <>
+            <TextInput
+              value={username}
+              onChangeText={setUsername}
+              placeholder="Username"
+              placeholderTextColor="#666"
+              style={{
+                backgroundColor: 'white',
+                padding: 10,
+                marginVertical: 10,
+                width: '80%',
+                borderRadius: 5,
+              }}
             />
-          </View>
-        </>
-      )}
-
-      {/* Login & Password Inputs */}
-      <TextInput
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        placeholderTextColor="#666"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={{
-          backgroundColor: 'white',
-          padding: 10,
-          marginVertical: 10,
-          width: '80%',
-          borderRadius: 5,
-        }}
-      />
-      <TextInput
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        placeholderTextColor="#666"
-        secureTextEntry={true}
-        style={{
-          backgroundColor: 'white',
-          padding: 10,
-          marginVertical: 10,
-          width: '80%',
-          borderRadius: 5,
-        }}
-      />
-
-      {/* Auth Button */}
-      <TouchableOpacity
-        onPress={handleAuth}
-        style={{
-          backgroundColor: '#6685B5',
-          padding: 15,
-          borderRadius: 5,
-          width: '80%',
-          alignItems: 'center',
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
-          {isLogin ? 'Login' : 'Register'}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Toggle between Login and Register */}
-      <TouchableOpacity
-        onPress={() => setIsLogin(!isLogin)}
-        style={{ marginTop: 20 }}
-      >
-        <Text style={{ color: 'white', textDecorationLine: 'underline' }}>
-          {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
-        </Text>
-      </TouchableOpacity>
+            <View style={{ width: '80%', marginVertical: 10 }}>
+              <LanguageSelector
+                value={nativeLanguage}
+                onChange={setNativeLanguage}
+                placeholder="Select Native Language"
+              />
+            </View>
+          </>
+        )}
+  
+        <TextInput
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          placeholderTextColor="#666"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={{
+            backgroundColor: 'white',
+            padding: 10,
+            marginVertical: 10,
+            width: '80%',
+            borderRadius: 5,
+          }}
+        />
+        <TextInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Password"
+          placeholderTextColor="#666"
+          secureTextEntry={true}
+          style={{
+            backgroundColor: 'white',
+            padding: 10,
+            marginVertical: 10,
+            width: '80%',
+            borderRadius: 5,
+          }}
+        />
+  
+        <TouchableOpacity
+          onPress={handleAuth}
+          style={{
+            backgroundColor: '#6685B5',
+            padding: 15,
+            borderRadius: 5,
+            width: '80%',
+            alignItems: 'center',
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+            {isLogin ? 'Login' : 'Register'}
+          </Text>
+        </TouchableOpacity>
+  
+        <TouchableOpacity
+          onPress={() => setIsLogin(!isLogin)}
+          style={{ marginTop: 20 }}
+        >
+          <Text style={{ color: 'white', textDecorationLine: 'underline' }}>
+            {isLogin ? "Don't have an account? Register" : "Already have an account? Login"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </LinearGradient>
   );
+  
 }
