@@ -1,0 +1,98 @@
+import React, { useState } from 'react';
+import { Image, StyleSheet, Button, TextInput, View } from 'react-native';
+import { HelloWave } from '@/components/HelloWave';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import axios from 'axios';
+
+const apiKey = ''; // Replace with your actual API key
+const targetLanguage = 'ja'; // Example target language (Japanese)
+
+export default function HomeScreen() {
+  const [text, setText] = useState('');
+  const [translatedText, setTranslatedText] = useState('');
+
+  const translateText = async (
+    message: string,
+    targetLanguage: string,
+    sender: string,
+    timestamp: string
+  ) => {
+    try {
+      const response = await axios.post(
+        `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+        {
+          q: message, // The message to be translated
+          target: targetLanguage, // Target language
+        }
+      );
+      console.log(`Sender: ${sender}, Timestamp: ${timestamp}`);
+      setTranslatedText(response.data.data.translations[0].translatedText); // Update state with translated text
+    } catch (error) {
+      console.error('Error translating text:', error);
+      setTranslatedText('Error occurred');
+    }
+  };
+
+  return (
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerImage={
+        <Image
+          source={require('@/assets/images/partial-react-logo.png')}
+          style={styles.reactLogo}
+        />
+      }>
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <TextInput
+          style={styles.textInput}
+          placeholder="Enter text to translate"
+          value={text}
+          onChangeText={setText}
+        />
+        <Button
+          title="Translate"
+          onPress={() => {
+            const sender = 'User'; // You can replace this with dynamic sender value
+            const timestamp = new Date().toISOString(); // Current timestamp
+            translateText(text, targetLanguage, sender, timestamp); // Pass arguments to the function
+          }}
+        />
+        <ThemedText>{translatedText ? `Translated: ${translatedText}` : ''}</ThemedText>
+      </ThemedView>
+      {/* Other steps */}
+    </ParallaxScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+  textInput: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 8,
+  },
+});
