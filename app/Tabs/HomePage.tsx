@@ -58,7 +58,7 @@ const HomePage = () => {
       </TouchableOpacity>
 
       <View style={styles.contentContainer}>
-        <QRCode value="myapp://Tabs/HomePage.tsx" />
+        <QRCode value="https://github.com" />
         <Text style={styles.title}>Your Chat Rooms</Text>
         
         
