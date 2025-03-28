@@ -5,7 +5,7 @@ import { initializeApp } from 'firebase/app';
 import axios from 'axios';
 
 // Interfaces
-interface UserData {
+export interface UserData {
     id: string;
     email: string;
     username: string;
@@ -13,21 +13,21 @@ interface UserData {
     createdAt: string;
 }
 
-interface Participant {
+export interface Participant {
     id: string;
     email: string;
     username: string;
     nativeLanguage: string;
 }
 
-interface Message {
+export interface Message {
     text: string;
     sender: string;
     senderId: string;
     timestamp: string;
 }
 
-interface ChatRoomData {
+export interface ChatRoomData {
     id?: string;
     roomCode: string;
     participants: Participant[];
@@ -285,6 +285,186 @@ export async function getChatRoom(roomCode: string) {
     }
 }
 
+export function getLanguageCode(languageName: string): string {
+    const languageMap: { [key: string]: string } = {
+        'English': 'en',
+        'Spanish': 'es',
+        'French': 'fr',
+        'German': 'de',
+        'Italian': 'it',
+        'Portuguese': 'pt',
+        'Russian': 'ru',
+        'Chinese': 'zh',
+        'Japanese': 'ja',
+        'Korean': 'ko',
+        'Arabic': 'ar',
+        'Hindi': 'hi',
+        'Bengali': 'bn',
+        'Dutch': 'nl',
+        'Polish': 'pl',
+        'Turkish': 'tr',
+        'Vietnamese': 'vi',
+        'Thai': 'th',
+        'Greek': 'el',
+        'Hebrew': 'he',
+        'Indonesian': 'id',
+        'Malay': 'ms',
+        'Filipino': 'fil',
+        'Swedish': 'sv',
+        'Danish': 'da',
+        'Finnish': 'fi',
+        'Czech': 'cs',
+        'Romanian': 'ro',
+        'Hungarian': 'hu',
+        'Ukrainian': 'uk',
+        'Catalan': 'ca',
+        'Afrikaans': 'af',
+        'Albanian': 'sq',
+        'Amharic': 'am',
+        'Armenian': 'hy',
+        'Azerbaijani': 'az',
+        'Basque': 'eu',
+        'Belarusian': 'be',
+        'Bosnian': 'bs',
+        'Bulgarian': 'bg',
+        'Croatian': 'hr',
+        'Estonian': 'et',
+        'Galician': 'gl',
+        'Georgian': 'ka',
+        'Gujarati': 'gu',
+        'Hausa': 'ha',
+        'Hawaiian': 'haw',
+        'Icelandic': 'is',
+        'Igbo': 'ig',
+        'Irish': 'ga',
+        'Javanese': 'jv',
+        'Kannada': 'kn',
+        'Kazakh': 'kk',
+        'Khmer': 'km',
+        'Kurdish': 'ku',
+        'Kyrgyz': 'ky',
+        'Lao': 'lo',
+        'Latin': 'la',
+        'Latvian': 'lv',
+        'Lithuanian': 'lt',
+        'Luxembourgish': 'lb',
+        'Macedonian': 'mk',
+        'Malagasy': 'mg',
+        'Malayalam': 'ml',
+        'Maltese': 'mt',
+        'Maori': 'mi',
+        'Marathi': 'mr',
+        'Mongolian': 'mn',
+        'Myanmar': 'my',
+        'Nepali': 'ne',
+        'Norwegian': 'no',
+        'Pashto': 'ps',
+        'Persian': 'fa',
+        'Punjabi': 'pa',
+        'Samoan': 'sm',
+        'Scots Gaelic': 'gd',
+        'Serbian': 'sr',
+        'Sesotho': 'st',
+        'Shona': 'sn',
+        'Sindhi': 'sd',
+        'Sinhala': 'si',
+        'Slovak': 'sk',
+        'Slovenian': 'sl',
+        'Somali': 'so',
+        'Sundanese': 'su',
+        'Swahili': 'sw',
+        'Tajik': 'tg',
+        'Tamil': 'ta',
+        'Telugu': 'te',
+        'Uzbek': 'uz',
+        'Welsh': 'cy',
+        'Xhosa': 'xh',
+        'Yiddish': 'yi',
+        'Yoruba': 'yo',
+        'Zulu': 'zu'
+    };
+
+    const code = languageMap[languageName];
+    if (!code) {
+        console.warn(`No language code found for: ${languageName}, defaulting to 'en'`);
+        return 'en';
+    }
+    return code;
+}
+
+export async function translateMessage(message: string, targetLanguage: string, sender: string, timestamp: string, sourceLanguage: string = 'en') {
+    try {
+        console.log('Starting translation process...');
+        console.log('Input parameters:', {
+            message,
+            sourceLanguage,
+            targetLanguage,
+            sender,
+            timestamp
+        });
+
+        // Convert both languages to codes
+        const sourceCode = getLanguageCode(sourceLanguage);
+        const targetCode = getLanguageCode(targetLanguage);
+        console.log('Language codes:', { sourceCode, targetCode });
+
+        // If the language codes are the same, return the original message
+        if (sourceCode === targetCode) {
+            console.log('Target language is the same as source language, skipping translation');
+            return {
+                text: message,
+                sender: sender,
+                timestamp: timestamp
+            };
+        }
+
+        console.log('Using API key:', GOOGLE_TRANSLATE_API_KEY);
+
+        const requestBody = {
+            q: message,
+            target: targetCode,
+            source: sourceCode
+        };
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+        const response = await axios.post(
+            `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`,
+            requestBody
+        );
+
+        console.log('Translation API response:', JSON.stringify(response.data, null, 2));
+
+        if (!response.data || !response.data.data || !response.data.data.translations || !response.data.data.translations[0]) {
+            console.error('Invalid response structure:', response.data);
+            throw new Error('Invalid response from translation API');
+        }
+
+        const translatedText = response.data.data.translations[0].translatedText;
+        console.log('Successfully translated text:', translatedText);
+        
+        return {
+            text: translatedText,
+            sender: sender,
+            timestamp: timestamp
+        };
+    } catch (error: any) {
+        console.error('Translation error details:', {
+            message: error.message,
+            code: error.code,
+            response: error.response?.data,
+            status: error.response?.status
+        });
+        
+        // Return original message if translation fails
+        console.log('Falling back to original message');
+        return {
+            text: message,
+            sender: sender,
+            timestamp: timestamp
+        };
+    }
+}
+
 export async function addMessageToChatRoom(roomCode: string, message: { text: string }, senderLanguage: string) {
     try {
         if (!currentUser) {
@@ -293,6 +473,7 @@ export async function addMessageToChatRoom(roomCode: string, message: { text: st
 
         console.log("Adding message to chat room:", roomCode);
         console.log("Raw message data:", JSON.stringify(message, null, 2));
+        console.log("Sender's language:", senderLanguage);
         
         const chatRoomRef = doc(db, "ChatRooms", roomCode);
         
@@ -304,6 +485,11 @@ export async function addMessageToChatRoom(roomCode: string, message: { text: st
 
         const chatRoomData = chatRoomDoc.data() as ChatRoomData;
         const participants = chatRoomData.participants;
+        
+        console.log("Chat room participants:", participants.map(p => ({
+            email: p.email,
+            nativeLanguage: p.nativeLanguage
+        })));
         
         // Create the original message object
         const messageObject: Message = {
@@ -317,17 +503,20 @@ export async function addMessageToChatRoom(roomCode: string, message: { text: st
         const updates: { [key: string]: any } = {};
         
         // Add original message to sender's language array
+        console.log(`Adding original message to ${senderLanguage} array:`, messageObject);
         updates[`messagesByLanguage.${senderLanguage}`] = arrayUnion(messageObject);
 
         // Translate and add message for each participant's native language
         for (const participant of participants) {
             if (participant.nativeLanguage !== senderLanguage) {
+                console.log(`Translating message for participant ${participant.email} from ${senderLanguage} to ${participant.nativeLanguage}`);
                 try {
                     const translatedMessage = await translateMessage(
                         message.text,
                         participant.nativeLanguage,
                         messageObject.sender,
-                        messageObject.timestamp
+                        messageObject.timestamp,
+                        senderLanguage  // Pass the source language
                     );
 
                     const translatedMessageObject: Message = {
@@ -337,15 +526,19 @@ export async function addMessageToChatRoom(roomCode: string, message: { text: st
                         timestamp: messageObject.timestamp
                     };
 
+                    console.log(`Adding translated message to ${participant.nativeLanguage} array:`, translatedMessageObject);
                     // Add translated message to participant's language array
                     updates[`messagesByLanguage.${participant.nativeLanguage}`] = arrayUnion(translatedMessageObject);
                 } catch (translationError: any) {
                     console.error(`Error translating to ${participant.nativeLanguage}:`, translationError);
                     // If translation fails, add original message
+                    console.log(`Translation failed, adding original message to ${participant.nativeLanguage} array`);
                     updates[`messagesByLanguage.${participant.nativeLanguage}`] = arrayUnion(messageObject);
                 }
             }
         }
+        
+        console.log("Final updates object:", JSON.stringify(updates, null, 2));
         
         // Update the chat room with all translated messages
         await updateDoc(chatRoomRef, {
@@ -400,34 +593,6 @@ export async function getRoomsByLanguage(roomCode: string) {
     }
 }
 
-export async function translateMessage(message: string, senderLanguage: string, sender: string, timestamp: string) {
-    try {
-        const response = await axios.post(
-            `https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`,
-            {
-                q: message,
-                target: senderLanguage,
-            }
-        );
-
-        const translatedText = response.data.data.translations[0].translatedText;
-        
-        return {
-            text: translatedText,
-            sender: sender,
-            timestamp: timestamp
-        };
-    } catch (error: any) {
-        console.error('Error translating text:', error);
-        // Return original message if translation fails
-        return {
-            text: message,
-            sender: sender,
-            timestamp: timestamp
-        };
-    }
-}
-
 export async function getUserChatRooms(): Promise<{ success: boolean; chatRooms?: UserChatRoom[]; error?: string }> {
     try {
         if (!currentUser) {
@@ -467,6 +632,29 @@ export async function getUserChatRooms(): Promise<{ success: boolean; chatRooms?
         };
     } catch (error: any) {
         console.error("Error fetching user's chat rooms:", error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+export async function getUserData(userId: string): Promise<{ success: boolean; userData?: UserData; error?: string }> {
+    try {
+        const userDoc = await getDoc(doc(db, "Users", userId));
+        if (userDoc.exists()) {
+            return {
+                success: true,
+                userData: userDoc.data() as UserData
+            };
+        } else {
+            return {
+                success: false,
+                error: "User data not found"
+            };
+        }
+    } catch (error: any) {
+        console.error("Error fetching user data:", error);
         return {
             success: false,
             error: error.message

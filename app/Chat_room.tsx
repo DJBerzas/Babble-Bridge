@@ -10,7 +10,7 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
-import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData, getCurrentUser } from '../scripts/firebaseDbAPI';
+import { addMessageToChatRoom, getChatRoom, Message, ChatRoomData, getCurrentUser, getUserData, getLanguageCode } from '../scripts/firebaseDbAPI';
 import { useLocalSearchParams } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
 
@@ -21,22 +21,39 @@ export default function ChatRoom() {
   const [error, setError] = useState('');
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [showQRCode, setShowQRCode] = useState(false); // State to toggle QR code visibility
+  const [userNativeLanguage, setUserNativeLanguage] = useState<string>('en');
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setCurrentUserEmail(user.email);
-    }
-    loadChatRoom();
+    const loadUserData = async () => {
+      const user = getCurrentUser();
+      if (user) {
+        setCurrentUserEmail(user.email);
+        const userData = await getUserData(user.uid);
+        if (userData.success && userData.userData) {
+          setUserNativeLanguage(userData.userData.nativeLanguage);
+        }
+      }
+    };
+    loadUserData();
   }, []);
+
+  // Reload messages when user's native language changes
+  useEffect(() => {
+    if (userNativeLanguage) {
+      loadChatRoom();
+    }
+  }, [userNativeLanguage]);
 
   const loadChatRoom = async () => {
     try {
       const result = await getChatRoom(roomCode as string);
       if (result.success && result.chatRoom) {
         const chatRoom = result.chatRoom as ChatRoomData;
-        const englishMessages = chatRoom.messagesByLanguage?.English || [];
-        setMessages(englishMessages);
+        // Get messages in the user's native language
+        const userMessages = chatRoom.messagesByLanguage?.[userNativeLanguage] || [];
+        console.log('Loading messages for language:', userNativeLanguage);
+        console.log('Messages found:', userMessages);
+        setMessages(userMessages);
       } else {
         setError('Failed to load chat room');
       }
@@ -55,12 +72,13 @@ export default function ChatRoom() {
         sender: currentUserEmail,
       };
 
-      const result = await addMessageToChatRoom(roomCode as string, messageData, 'English');
+      const result = await addMessageToChatRoom(roomCode as string, messageData, userNativeLanguage);
       if (result.success) {
         // Create new message object
         const newMessageObj: Message = {
           text: messageData.text,
           sender: messageData.sender,
+          senderId: getCurrentUser()?.uid || '',
           timestamp: new Date().toISOString(),
         };
 
