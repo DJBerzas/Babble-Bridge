@@ -44,6 +44,9 @@ export default function ChatRoom() {
     }
   };
 
+
+
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentUserEmail) return;
 

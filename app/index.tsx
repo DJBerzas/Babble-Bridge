@@ -4,6 +4,7 @@ import { Link, router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { loginUser, registerUser } from '../scripts/firebaseDbAPI';
 import LanguageSelector from './components/LanguageSelector';
+import QRCode from 'react-native-qrcode-svg';
 
 // Hides the default header (optional)
 export const options = {

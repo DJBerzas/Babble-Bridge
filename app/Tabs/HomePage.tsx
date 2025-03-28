@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { getUserChatRooms, UserChatRoom } from '../../scripts/firebaseDbAPI';
+import QRCode from 'react-native-qrcode-svg';
 
 const HomePage = () => {
   const router = useRouter();
@@ -57,7 +58,9 @@ const HomePage = () => {
       </TouchableOpacity>
 
       <View style={styles.contentContainer}>
+        <QRCode value="myapp://Tabs/HomePage.tsx" />
         <Text style={styles.title}>Your Chat Rooms</Text>
+        
         
         {loading ? (
           <Text style={styles.loadingText}>Loading chat rooms...</Text>
