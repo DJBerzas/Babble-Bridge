@@ -1,6 +1,8 @@
 import React from 'react';
 import { Image, Text, View } from 'react-native';
 import { Tabs } from 'expo-router';
+//import {images} from "../../../../../constants/images";
+
 
 const _layout = () => {
   return (
