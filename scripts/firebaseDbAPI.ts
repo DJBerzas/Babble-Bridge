@@ -42,18 +42,6 @@ export interface UserChatRoom {
     participants: Participant[];
 }
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCV7-PIC7MOlbTd-aZtVSP7KgR9BKy_kCo",
-  authDomain: "babblebridge.firebaseapp.com",
-  projectId: "babblebridge",
-  storageBucket: "babblebridge.firebasestorage.app",
-  messagingSenderId: "157389739525",
-  appId: "1:157389739525:web:4ef10b80a7193c275b2e6c",
-  measurementId: "G-QHD4TMNK89"
-};
-
-const GOOGLE_TRANSLATE_API_KEY = "AIzaSyAmtq77wGBFT8-eJa31KuVXorFktEXy_ag"; 
-
 
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(firebaseApp);
