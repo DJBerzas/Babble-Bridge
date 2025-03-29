@@ -6,7 +6,6 @@ import { loginUser, registerUser } from '../scripts/firebaseDbAPI';
 import LanguageSelector from './components/LanguageSelector';
 import QRCode from 'react-native-qrcode-svg';
 
-// Hides the default header (optional)
 export const options = {
   headerShown: false,
 };
@@ -49,18 +48,17 @@ export default function Index() {
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}
     >
-      {/* 👇 Wrapper that moves everything down */}
-      <View style={{ flex: 1, alignItems: 'center', paddingTop: 80 }}>
+      <View style={{ flex: 1, alignItems: 'center', paddingTop: 120 }}>
         <Text style={{ fontSize: 32, color: 'white', marginBottom: 20, fontWeight: 'bold' }}>
-          {isLogin ? 'Welcome Back!' : 'Create Account'}
+          {isLogin ? 'Welcome!' : 'Create Account'}
         </Text>
-  
+
         <Image
           source={require("./globe.png")}
           style={{ width: 150, height: 150, marginBottom: 20 }}
           resizeMode="contain"
         />
-  
+
         {!isLogin && (
           <>
             <TextInput
@@ -85,7 +83,7 @@ export default function Index() {
             </View>
           </>
         )}
-  
+
         <TextInput
           value={email}
           onChangeText={setEmail}
@@ -115,7 +113,7 @@ export default function Index() {
             borderRadius: 5,
           }}
         />
-  
+
         <TouchableOpacity
           onPress={handleAuth}
           style={{
@@ -131,7 +129,7 @@ export default function Index() {
             {isLogin ? 'Login' : 'Register'}
           </Text>
         </TouchableOpacity>
-  
+
         <TouchableOpacity
           onPress={() => setIsLogin(!isLogin)}
           style={{ marginTop: 20 }}
@@ -143,5 +141,4 @@ export default function Index() {
       </View>
     </LinearGradient>
   );
-  
 }
