@@ -46,13 +46,10 @@ export default function QR_Scan() {
     };
   }, []);
 
-  // Handle tab focus/unfocus
   useFocusEffect(
     React.useCallback(() => {
-      // When tab is focused, activate camera
       setIsCameraActive(true);
       
-      // When tab is unfocused, deactivate camera
       return () => {
         setIsCameraActive(false);
         qrLock.current = false;
@@ -64,7 +61,6 @@ export default function QR_Scan() {
     if (data && !qrLock.current) {
       qrLock.current = true;
       try {
-        // Assuming the URL format is myapp://Tabs/Chat_room?roomCode=547428
         const roomCodeMatch = data.match(/roomCode=(\d{6})/);
         if (roomCodeMatch) {
           const roomCode = roomCodeMatch[1]; // Extract the room code
