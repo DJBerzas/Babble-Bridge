@@ -1,50 +1,142 @@
-# Welcome to your Expo app 👋
+# Babble Bridge
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Babble Bridge is a real-time multilingual chat application that enables seamless communication between users speaking different languages. The app automatically translates messages in real-time, allowing users to communicate in their native languages while others receive the messages in their preferred language.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Real-time Multilingual Chat**: Users can communicate in their native languages while messages are automatically translated for other participants
+- **QR Code Room Sharing**: Easy room sharing through QR codes
+- **Language Detection**: Automatic detection of message language
+- **Multiple Language Support**: Supports a wide range of languages including:
+  - English (US/UK)
+  - Spanish
+  - French
+  - German
+  - Italian
+  - Portuguese (Brazil/Portugal)
+  - Russian
+  - Chinese
+  - Japanese
+  - Korean
+  - And many more...
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+- **Frontend**: React Native with Expo
+- **Backend**: Firebase
+  - Authentication
+  - Firestore Database
+  - Real-time updates
+- **Translation API**: Google Cloud Translation API
 
-   ```bash
-    npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Node.js (v14 or higher)
+- npm or yarn
+- Expo CLI
+- Firebase account
+- Google Cloud account (for Translation API)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Installation
 
-## Get a fresh project
-
-When you're ready, run:
-
+1. Clone the repository:
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/babble-bridge.git
+cd babble-bridge
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
 
-## Learn more
+3. Set up environment variables:
+Create a `.env` file in the root directory with the following variables:
+```
+FIREBASE_API_KEY=your_firebase_api_key
+FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+FIREBASE_APP_ID=your_firebase_app_id
+FIREBASE_MEASUREMENT_ID=your_firebase_measurement_id
+GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Start the development server:
+```bash
+npx expo start
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Project Structure
 
-## Join the community
+```
+Babble-Bridge/
+├── app/
+│   ├── Tabs/
+│   │   ├── Chat_room.tsx      # Main chat room interface
+│   │   ├── create_room.tsx    # Room creation screen
+│   │   ├── QR_Scan.tsx        # QR code scanner
+│   │   └── Overlay.tsx        # UI overlay components
+│   └── _layout.tsx            # Root layout component
+├── scripts/
+│   └── firebaseDbAPI.ts       # Firebase and translation API integration
+└── assets/                    # Static assets
+```
 
-Join our community of developers creating universal apps.
+## Key Components
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Chat Room
+- Real-time message updates
+- Automatic message translation
+- Language-specific message storage
+- Participant management
+
+### QR Scanner
+- Camera integration
+- QR code detection
+- Room code extraction
+- Automatic navigation to chat rooms
+
+### Firebase Integration
+- User authentication
+- Real-time database updates
+- Message storage and retrieval
+- Participant tracking
+
+## API Integration
+
+### Google Translate API
+The application uses Google Cloud Translation API for real-time message translation. The API supports:
+- Language detection
+- Text translation
+- Multiple language pairs
+- Error handling and fallback
+
+### Firebase Services
+- Authentication for user management
+- Firestore for data storage
+- Real-time updates for message synchronization
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Firebase for backend services
+- Google Cloud for translation services
+- Expo for the development framework
+- React Native community for components and libraries
