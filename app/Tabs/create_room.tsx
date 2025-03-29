@@ -15,7 +15,7 @@ import {
   getCurrentUser,
   getUserData,
   Participant,
-  detectLanguage,
+  getUserDataByEmail,
 } from '../../scripts/firebaseDbAPI';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -58,7 +58,12 @@ const create_room = () => {
 
     setLoading(true);
     try {
-      const detectedLanguage = await detectLanguage(email);
+      const userResult = await getUserDataByEmail(email);
+      let nativeLanguage = 'English'; // Default language
+
+      if (userResult.success && userResult.userData) {
+        nativeLanguage = userResult.userData.nativeLanguage;
+      }
 
       setParticipants([
         ...participants,
@@ -66,7 +71,7 @@ const create_room = () => {
           id: email,
           email: email,
           username: email.split('@')[0],
-          nativeLanguage: detectedLanguage,
+          nativeLanguage: nativeLanguage,
         },
       ]);
 
@@ -83,7 +88,7 @@ const create_room = () => {
   };
 
   const createRoom = async () => {
-    if (participants.length < 2) {
+    if (participants.length < 1) {
       Alert.alert('Error', 'Please add at least one participant');
       return;
     }

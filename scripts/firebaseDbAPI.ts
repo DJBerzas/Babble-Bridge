@@ -518,6 +518,36 @@ export async function getUserData(userId: string): Promise<{ success: boolean; u
     }
 }
 
+export async function getUserDataByEmail(email: string): Promise<{ success: boolean; userData?: UserData; error?: string }> {
+    try {
+        const usersCollection = collection(db, "Users");
+        const querySnapshot = await getDocs(usersCollection);
+        
+        for (const doc of querySnapshot.docs) {
+            const userData = doc.data() as UserData;
+            if (userData.email === email) {
+                return {
+                    success: true,
+                    userData: {
+                        ...userData,
+                        id: doc.id
+                    }
+                };
+            }
+        }
+        
+        return {
+            success: false,
+            error: "User not found"
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
 export async function detectLanguage(text: string): Promise<string> {
     try {
         const response = await axios.post(
