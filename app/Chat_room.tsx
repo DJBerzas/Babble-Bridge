@@ -144,13 +144,19 @@ export default function ChatRoom() {
       <Stack.Screen
         options={{
           title: `Room: ${roomCode}`,
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: '#6685B5',
+          },
+          headerTintColor: '#fff',
+          headerBackTitle: 'Home',
           headerRight: () => (
             <View style={styles.headerButtons}>
               <TouchableOpacity
                 style={styles.headerButton}
                 onPress={() => setShowQRCode(!showQRCode)}
               >
-                <Ionicons name="qr-code" size={24} color="#6685B5" />
+                <Ionicons name="qr-code" size={24} color="#fff" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerButton}
@@ -158,9 +164,9 @@ export default function ChatRoom() {
                 disabled={isDeleting}
               >
                 {isDeleting ? (
-                  <ActivityIndicator color="#FF3B30" size="small" />
+                  <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                  <Ionicons name="close-circle" size={24} color="#fff" />
                 )}
               </TouchableOpacity>
             </View>
@@ -180,9 +186,11 @@ export default function ChatRoom() {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.chatContainer}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
           <ScrollView
             style={styles.messagesContainer}
+            contentContainerStyle={styles.messagesContentContainer}
             ref={(ref) => {
               if (ref) {
                 setTimeout(() => {
@@ -201,9 +209,18 @@ export default function ChatRoom() {
                     : styles.receivedMessage,
                 ]}
               >
-                <Text style={styles.senderText}>{message.sender}</Text>
-                <Text style={styles.messageText}>{message.text}</Text>
-                <Text style={styles.timestampText}>
+                <Text style={[
+                  styles.senderText,
+                  message.sender === currentUserEmail && styles.sentSenderText
+                ]}>{message.sender}</Text>
+                <Text style={[
+                  styles.messageText,
+                  message.sender === currentUserEmail && styles.sentMessageText
+                ]}>{message.text}</Text>
+                <Text style={[
+                  styles.timestampText,
+                  message.sender === currentUserEmail && styles.sentTimestampText
+                ]}>
                   {new Date(message.timestamp).toLocaleTimeString()}
                 </Text>
               </View>
@@ -266,10 +283,14 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   messagesContainer: {
     flex: 1,
+  },
+  messagesContentContainer: {
     padding: 10,
+    paddingBottom: 80,
   },
   messageContainer: {
     maxWidth: '80%',
@@ -290,9 +311,16 @@ const styles = StyleSheet.create({
     color: '#666',
     marginBottom: 4,
   },
+  sentSenderText: {
+    color: '#fff',
+  },
   messageText: {
     fontSize: 16,
     color: '#000',
+  },
+  sentMessageText: {
+    fontSize: 16,
+    color: '#fff',
   },
   timestampText: {
     fontSize: 10,
@@ -300,12 +328,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
     alignSelf: 'flex-end',
   },
+  sentTimestampText: {
+    color: '#fff',
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
     borderTopWidth: 1,
     borderTopColor: '#E9F1FE',
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
   input: {
     flex: 1,
