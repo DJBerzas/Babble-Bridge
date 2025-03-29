@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { addMessageToChatRoom, 
   getChatRoom, 
@@ -18,10 +20,11 @@ import { addMessageToChatRoom,
   getUserData, 
   getLanguageCode, 
   addParticipantToRoom, 
-  Participant } 
-  from '../scripts/firebaseDbAPI';
-import { useLocalSearchParams } from 'expo-router';
+  Participant,
+  deleteChatRoom } from '../scripts/firebaseDbAPI';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import QRCode from 'react-native-qrcode-svg';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function ChatRoom() {
   const { roomCode } = useLocalSearchParams();
@@ -29,8 +32,10 @@ export default function ChatRoom() {
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
-  const [showQRCode, setShowQRCode] = useState(false); // State to toggle QR code visibility
+  const [showQRCode, setShowQRCode] = useState(false);
   const [userNativeLanguage, setUserNativeLanguage] = useState<string>('en');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -41,7 +46,6 @@ export default function ChatRoom() {
         if (userData.success && userData.userData) {
           setUserNativeLanguage(userData.userData.nativeLanguage);
           
-          // Add user as participant to the room
           const participant: Participant = {
             id: user.uid,
             email: user.email || '',
@@ -59,18 +63,16 @@ export default function ChatRoom() {
     loadUserData();
   }, [roomCode]);
 
-  // Reload messages when user's native language changes
   useEffect(() => {
     if (userNativeLanguage) {
       loadChatRoom();
     }
   }, [userNativeLanguage]);
 
-  // Add periodic message refresh
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       loadChatRoom();
-    }, 2000); // Refresh every 2 seconds
+    }, 2000);
 
     return () => clearInterval(refreshInterval);
   }, [roomCode, userNativeLanguage]);
@@ -79,121 +81,158 @@ export default function ChatRoom() {
     try {
       const result = await getChatRoom(roomCode as string);
       if (result.success && result.chatRoom) {
-        const chatRoom = result.chatRoom as ChatRoomData;
-        // Get messages in the user's native language
-        const userMessages = chatRoom.messagesByLanguage?.[userNativeLanguage] || [];
-        console.log('Loading messages for language:', userNativeLanguage);
-        console.log('Messages found:', userMessages);
-        setMessages(userMessages);
+        const messagesInUserLanguage = result.chatRoom.messagesByLanguage[userNativeLanguage] || [];
+        setMessages(messagesInUserLanguage);
       } else {
-        setError('Failed to load chat room');
+        setError(result.error || 'Failed to load messages');
       }
     } catch (err) {
-      console.error('Error loading chat room:', err);
-      setError('Failed to load chat room');
+      setError('Error loading messages');
     }
   };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !currentUserEmail) return;
+    if (!newMessage.trim()) return;
 
     try {
-      const messageData = {
-        text: newMessage.trim(),
-        sender: currentUserEmail,
-      };
-
-      const result = await addMessageToChatRoom(roomCode as string, messageData, userNativeLanguage);
+      const result = await addMessageToChatRoom(roomCode as string, { text: newMessage }, userNativeLanguage);
       if (result.success) {
         setNewMessage('');
-        // Reload messages after sending
-        await loadChatRoom();
+        loadChatRoom();
       } else {
-        setError('Failed to send message');
+        setError(result.error || 'Failed to send message');
       }
     } catch (err) {
-      console.error('Error sending message:', err);
-      setError('Failed to send message');
+      setError('Error sending message');
     }
+  };
+
+  const handleDeleteRoom = async () => {
+    Alert.alert(
+      "Leave Chat Room",
+      "Are you sure you want to leave this chat room? You can rejoin later if needed.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Leave",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setIsDeleting(true);
+              const result = await deleteChatRoom(roomCode as string);
+              if (result.success) {
+                router.replace('/Tabs/HomePage');
+              } else {
+                setError(result.error || 'Failed to leave chat room');
+              }
+            } catch (error: any) {
+              setError(error.message || 'Failed to leave chat room');
+            } finally {
+              setIsDeleting(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Room: {roomCode}</Text>
-        
-        {/* Button to toggle QR code visibility */}
-        <TouchableOpacity 
-          style={styles.qrButton} 
-          onPress={() => setShowQRCode(!showQRCode)}
-        >
-          <Text style={styles.qrButtonText}>
-            {showQRCode ? 'Hide QR Code' : 'Show QR Code'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <Stack.Screen
+        options={{
+          title: `Room: ${roomCode}`,
+          headerRight: () => (
+            <View style={styles.headerButtons}>
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={() => setShowQRCode(!showQRCode)}
+              >
+                <Ionicons name="qr-code" size={24} color="#6685B5" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.headerButton}
+                onPress={handleDeleteRoom}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator color="#FF3B30" size="small" />
+                ) : (
+                  <Ionicons name="close-circle" size={24} color="#FF3B30" />
+                )}
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
+      />
 
-      {/* Conditionally render QR code */}
-      {showQRCode && (
+      {showQRCode ? (
         <View style={styles.qrContainer}>
-          <QRCode value={`myapp://Chat_room?roomCode=${roomCode}`} size={200} />
+          <QRCode
+            value={`${process.env.EXPO_PUBLIC_APP_URL}/Chat_room?roomCode=${roomCode}`}
+            size={200}
+          />
+          <Text style={styles.qrText}>Scan this QR code to join the chat room</Text>
         </View>
-      )}
-
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
-        <ScrollView 
-          style={styles.messagesContainer}
-          contentContainerStyle={styles.messagesContentContainer}
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.chatContainer}
         >
-          {Array.isArray(messages) && messages.map((message, index) => {
-            const isCurrentUser = message.sender === currentUserEmail;
-            return (
-              <View 
-                key={index} 
+          <ScrollView
+            style={styles.messagesContainer}
+            ref={(ref) => {
+              if (ref) {
+                setTimeout(() => {
+                  ref.scrollToEnd({ animated: true });
+                }, 100);
+              }
+            }}
+          >
+            {messages.map((message, index) => (
+              <View
+                key={index}
                 style={[
-                  styles.messageBox,
-                  isCurrentUser ? styles.sentMessage : styles.receivedMessage
+                  styles.messageContainer,
+                  message.sender === currentUserEmail
+                    ? styles.sentMessage
+                    : styles.receivedMessage,
                 ]}
               >
-                <Text style={[
-                  styles.senderText,
-                  isCurrentUser ? styles.sentSenderText : styles.receivedSenderText
-                ]}>
-                  {String(message.sender)}
-                </Text>
-                <Text style={[
-                  styles.messageText,
-                  isCurrentUser ? styles.sentMessageText : styles.receivedMessageText
-                ]}>
-                  {String(message.text)}
-                </Text>
-                <Text style={[
-                  styles.timestampText,
-                  isCurrentUser ? styles.sentTimestampText : styles.receivedTimestampText
-                ]}>
-                  {new Date(message.timestamp || '').toLocaleTimeString()}
+                <Text style={styles.senderText}>{message.sender}</Text>
+                <Text style={styles.messageText}>{message.text}</Text>
+                <Text style={styles.timestampText}>
+                  {new Date(message.timestamp).toLocaleTimeString()}
                 </Text>
               </View>
-            );
-          })}
-        </ScrollView>
+            ))}
+          </ScrollView>
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            placeholder="Type a message..."
-            placeholderTextColor="#666"
-          />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-            <Text style={styles.sendButtonText}>Send</Text>
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              placeholder="Type a message..."
+              placeholderTextColor="#999"
+              multiline
+            />
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={handleSendMessage}
+              disabled={!newMessage.trim()}
+            >
+              <Ionicons
+                name="send"
+                size={24}
+                color={newMessage.trim() ? '#6685B5' : '#999'}
+              />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </SafeAreaView>
@@ -203,116 +242,87 @@ export default function ChatRoom() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 15,
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
   },
-  headerText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
   },
-  qrButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: '#007AFF',
-    borderRadius: 5,
-  },
-  qrButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  headerButton: {
+    marginLeft: 15,
   },
   qrContainer: {
-    alignItems: 'center', // Centers the QR code horizontally
-    marginTop: 30, // Adds margin to push it further down
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  keyboardAvoidingView: {
+  qrText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  chatContainer: {
     flex: 1,
   },
   messagesContainer: {
     flex: 1,
-  },
-  messagesContentContainer: {
     padding: 10,
   },
-  messageBox: {
+  messageContainer: {
     maxWidth: '80%',
+    marginVertical: 5,
     padding: 10,
     borderRadius: 10,
-    marginVertical: 5,
   },
   sentMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6685B5',
   },
   receivedMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#E5E5EA',
+    backgroundColor: '#E9F1FE',
   },
   senderText: {
     fontSize: 12,
-    marginBottom: 4,
-  },
-  sentSenderText: {
-    color: '#fff',
-  },
-  receivedSenderText: {
     color: '#666',
+    marginBottom: 4,
   },
   messageText: {
     fontSize: 16,
-  },
-  sentMessageText: {
-    color: '#fff',
-  },
-  receivedMessageText: {
     color: '#000',
   },
   timestampText: {
     fontSize: 10,
+    color: '#999',
     marginTop: 4,
     alignSelf: 'flex-end',
-  },
-  sentTimestampText: {
-    color: '#fff',
-  },
-  receivedTimestampText: {
-    color: '#666',
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
+    borderTopColor: '#E9F1FE',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#F5F5F5',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 10,
     marginRight: 10,
-    fontSize: 16,
+    maxHeight: 100,
+    color: '#000',
   },
   sendButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    padding: 5,
   },
   errorText: {
     color: 'red',
-    padding: 10,
     textAlign: 'center',
+    padding: 10,
   },
 });

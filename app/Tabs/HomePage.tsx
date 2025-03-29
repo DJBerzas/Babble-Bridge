@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Text, View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { Image, Text, View, ScrollView, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { getUserChatRooms, UserChatRoom } from '../../scripts/firebaseDbAPI';
-import { useRouter } from 'expo-router';
+import { getUserChatRooms, UserChatRoom, deleteChatRoom } from '../../scripts/firebaseDbAPI';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomePage() {
   const router = useRouter();
   const [chatRooms, setChatRooms] = useState<UserChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadChatRooms();
-  }, []);
+  const [deletingRoom, setDeletingRoom] = useState<string | null>(null);
 
   const loadChatRooms = async () => {
     try {
@@ -29,12 +27,55 @@ export default function HomePage() {
     }
   };
 
+  useEffect(() => {
+    loadChatRooms();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadChatRooms();
+    }, [])
+  );
+
   const handleBackToLogin = () => {
     router.replace(`/`);
   };
 
   const handleJoinRoom = (roomCode: string) => {
     router.push(`/Chat_room?roomCode=${roomCode}`);
+  };
+
+  const handleDeleteRoom = async (roomCode: string) => {
+    Alert.alert(
+      "Leave Chat Room",
+      "Are you sure you want to leave this chat room? You can rejoin later if needed.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Leave",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeletingRoom(roomCode);
+              const result = await deleteChatRoom(roomCode);
+              if (result.success) {
+                Alert.alert("Success", "You have left the chat room");
+                loadChatRooms();
+              } else {
+                Alert.alert("Error", result.error || "Failed to leave chat room");
+              }
+            } catch (error: any) {
+              Alert.alert("Error", error.message || "Failed to leave chat room");
+            } finally {
+              setDeletingRoom(null);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -67,21 +108,33 @@ export default function HomePage() {
         ) : (
           <ScrollView style={styles.chatRoomsList}>
             {chatRooms.map((room) => (
-              <TouchableOpacity
-                key={room.roomCode}
-                style={styles.chatRoomItem}
-                onPress={() => handleJoinRoom(room.roomCode)}
-              >
-                <View style={styles.chatRoomInfo}>
-                  <Text style={styles.roomCode}>Room: {room.roomCode}</Text>
-                  <Text style={styles.participantCount}>
-                    {room.participants.length} participants
-                  </Text>
-                  <Text style={styles.lastVisited}>
-                    Last active: {new Date(room.lastVisited).toLocaleDateString()}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              <View key={room.roomCode} style={styles.chatRoomItemContainer}>
+                <TouchableOpacity
+                  style={styles.chatRoomItem}
+                  onPress={() => handleJoinRoom(room.roomCode)}
+                >
+                  <View style={styles.chatRoomInfo}>
+                    <Text style={styles.roomCode}>Room: {room.roomCode}</Text>
+                    <Text style={styles.participantCount}>
+                      {room.participants.length} participants
+                    </Text>
+                    <Text style={styles.lastVisited}>
+                      Last active: {new Date(room.lastVisited).toLocaleDateString()}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDeleteRoom(room.roomCode)}
+                    disabled={deletingRoom === room.roomCode}
+                  >
+                    {deletingRoom === room.roomCode ? (
+                      <ActivityIndicator color="#FF3B30" size="small" />
+                    ) : (
+                      <Ionicons name="close-circle" size={20} color="#FF3B30" />
+                    )}
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </View>
             ))}
           </ScrollView>
         )}
@@ -146,19 +199,23 @@ const styles = StyleSheet.create({
   chatRoomsList: {
     flex: 1,
   },
+  chatRoomItemContainer: {
+    marginBottom: 10,
+  },
   chatRoomItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderRadius: 10,
     padding: 15,
-    marginBottom: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    position: 'relative',
   },
   chatRoomInfo: {
     gap: 5,
+    paddingRight: 30,
   },
   roomCode: {
     fontSize: 18,
@@ -172,5 +229,11 @@ const styles = StyleSheet.create({
   lastVisited: {
     fontSize: 12,
     color: '#999',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 5,
   },
 });
