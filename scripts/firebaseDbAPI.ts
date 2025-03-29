@@ -4,7 +4,6 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, on
 import { initializeApp } from 'firebase/app';
 import axios from 'axios';
 
-// Interfaces
 export interface UserData {
     id: string;
     email: string;
@@ -43,7 +42,6 @@ export interface UserChatRoom {
     participants: Participant[];
 }
 
-// Firebase configuration for testing
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCV7-PIC7MOlbTd-aZtVSP7KgR9BKy_kCo",
   authDomain: "babblebridge.firebaseapp.com",
@@ -54,16 +52,14 @@ const FIREBASE_CONFIG = {
   measurementId: "G-QHD4TMNK89"
 };
 
-// Google Translate API Key
-const GOOGLE_TRANSLATE_API_KEY = "AIzaSyAmtq77wGBFT8-eJa31KuVXorFktEXy_ag"; // Replace with your actual API key
+const GOOGLE_TRANSLATE_API_KEY = "AIzaSyAmtq77wGBFT8-eJa31KuVXorFktEXy_ag"; 
 
-// Initialize Firebase with the config
+
 const firebaseApp = initializeApp(FIREBASE_CONFIG);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 let currentUser: User | null = null;
 
-// Listen for auth state changes
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
